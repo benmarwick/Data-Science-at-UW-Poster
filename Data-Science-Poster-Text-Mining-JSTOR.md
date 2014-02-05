@@ -61,7 +61,7 @@ In archaeology we see a turn from typological analyses of pottery to work on pop
 ### unpack and get nouns American Antiquity
 path_AmAnt <-'/home/two/teamviewer/AA'
 unpack1grams <- JSTOR_unpack1grams(path = path_AmAnt)
-nouns <-  JSTOR_dtmofnouns(unpack1grams, sparse = 0.75)
+nouns <-  JSTOR_dtmofnouns(unpack1grams, sparse = 0.99)
 
 # most frequent words over time
 JSTOR_freqwords(unpack1grams, nouns)
@@ -78,7 +78,20 @@ topmod <- JSTOR_lda(unpack1grams, nouns, K, alpha = 50/K) # generate topic model
 htoncold <- JSTOR_lda_hotncoldtopics(topmod, pval = 0.01, ma = 5)
 ```
 
+Ngrams over time show the complex relationship between gender and feminism in American archaeology. The two terms appear together initially, then diverge in their frequencies. 
+
 ```{r AA-ngram-over-time}
+# plot two words over time
+JSTOR_2words(unpack1grams, "gender", c("feminist", 'feminism'), span = 0.4)
+```
+
+K-means clustering of journal articles using word frequencies (right) reveals distinct approaches to gender in the American archaeological literature. In the upper right we have a cluster of articles on the archaeological record of the US Southwest. The large lower cluster is articles about gender theory and philosophy. 
+
+```{r AA-k-means}
+# plot k-means clusters of documents containing the word 'gender'
+gender <- JSTOR_clusterbywords(nouns, 'gender', f = 0.01)
+```
+
 
 
 
