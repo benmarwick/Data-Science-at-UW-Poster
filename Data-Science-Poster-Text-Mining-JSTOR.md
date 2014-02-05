@@ -4,9 +4,9 @@ Ben Marwick & Ian Kretzler, UW Anthropology
 
 This markdown file accompanies the poster presented at the UW Data Science event on 7 Feb 2014. It contains the R code used to generate the figures on the poster and additional details about methods that are not on the poster. 
 
-Google’s Ngram viewer is a tool for visualizing the popularity of words over time in 5 million books digitized by Google. It has been described as the ‘gateway drug’  for data science in the humanities. While it is fun for casual searches, it has substantial limitations that prevent it from being a scholarly tool. The main problem is we simply don’t know what is in the corpus. This makes validation through close reading of the texts impossible.
+[Google’s Ngram viewer](https://books.google.com/ngrams) is a tool for visualizing the popularity of words over time in 5 million books digitized by Google. It has been described as the ‘gateway drug’  for data science in the humanities ([1](http://mainedh.org/2013/09/09/google-ngrams-the-gateway-drug-to-digital-humanities/), [2](http://www.dancohen.org/2010/12/19/initial-thoughts-on-the-google-books-ngram-viewer-and-datasets/)). While it is fun for casual searches, it has substantial limitations that prevent it from being a scholarly tool. The main problem is we simply don’t know what is in the corpus. This makes validation through close reading of the texts impossible.
 
-Inspired by the Google Ngram viewer, we wrote JSTORr, an R package that visualizes Ngrams for corpora held by JSTOR, a digital library of 2000 scholarly journals. JSTOR’s Data for Research service allows users to download full text of journals. With JSTORr, the full text can be analysed for ngrams, word correlations, document clustering and topic modelling. This means that we can now carefully build a sizable corpora of scholarly literature on specific topics and investigate them with text mining methods. In this poster we demonstrate some of the basic functions of the package to get insights into the history of science. 
+Inspired by the Google Ngram viewer, we wrote [JSTORr](https://github.com/UW-ARCHY-textual-macroanalysis-lab/JSTORr), an R package that visualizes Ngrams for corpora held by JSTOR, a digital library of 2000 scholarly journals. [JSTOR’s Data for Research](http://about.jstor.org/service/data-for-research) service allows users to download full text of journals. With JSTORr, the full text can be analysed for ngrams, word correlations, document clustering and topic modelling. This means that we can now carefully build a sizable corpora of scholarly literature on specific topics and investigate them with text mining methods. In this poster we demonstrate some of the basic functions of the package to get insights into the history of science. 
 
 The package is hosted on github and can be installed locally using the following code:
 
@@ -16,7 +16,7 @@ install_github(repo = "JSTORr", username = "UW-ARCHY-textual-macroanalysis-lab")
 library(JSTORr)
 ```
 
-For this poster we selected three journals by searching the Thomson Reuters ISI Journal Citation Reports for 'Statistics and Probability', 'Biology' and 'Anthropology' (more specifically archaeology) and ranking the search results by the journals' Eigenfactor Scores. We then obtained from JSTOR all the available articles of the highest ranking journal for each subject in JSTOR's collection. For 'Statistics and Probability' this was _Biometrika_, for 'Biology' this was _Philosophical Transactions of the Royal Society B_, and for 'Anthropology' it was _American Antiquity_. The journal articles were obtained from JSTOR's Data for Research service. The data were then analysed using the JSTORr package (1.0.20140204) with R (3.0.2 on x86_64-pc-linux-gnu 64-bit). 
+For this poster we selected three journals by searching the Thomson Reuters ISI Journal Citation Reports for 'Statistics and Probability', 'Biology' and 'Anthropology' (more specifically archaeology) and ranking the search results by the journals' Eigenfactor Scores. We then obtained from JSTOR all the available articles of the highest ranking journal for each of the three subject areas. For 'Statistics and Probability' this was _Biometrika_, for 'Biology' this was _Philosophical Transactions of the Royal Society B_, and for 'Anthropology' it was _American Antiquity_. The journal articles were obtained from JSTOR's Data for Research service. The data were then analysed using the JSTORr package (1.0.20140204) with R (3.0.2 on x86_64-pc-linux-gnu 64-bit). 
 
 ```{r unzip-data}
 # My local path where the zip files are - yours will be different
@@ -32,9 +32,6 @@ unzip('2014.1.20.YFVATDRz-Biometrika.zip', exdir = "Biometrika")
 ```
 
 Looking first at the statistics journal _Biometrika_, we can quickly see intellectual shifts in a high-impact statistics journal (above) from correlation to model-based analyses. We can also clearly see the impact of the two world wars on the journal with a drop in word frequencies during 1916-1920 and 1941-45. 
- 
- 
-Similarly, a prominent biology journal reveals a turn from macrostructures to a focus on cells and proteins. We might hypothesize that these intellectual trends are related to technological changes. This hypothesis could be tested by close reading of a small sample of articles.
 
 ```{r Biometrika}
 ### unpack and get nouns Biometrika
@@ -46,7 +43,7 @@ nouns <-  JSTOR_dtmofnouns(unpack1grams, sparse = 0.75)
 JSTOR_freqwords(unpack1grams, nouns)
 ```
 
-
+Similarly, the prominent biology journal _Philosophical Transactions of the Royal Society B_ reveals a turn from macrostructures to a focus on cells and proteins. We might hypothesize that these intellectual trends are related to technological changes in imaging and biochemistry. This hypothesis could be tested by close reading of a small sample of articles.
 
 ```{r PTRS_B}
 ### unpack and get nouns PTRS_B
@@ -58,6 +55,7 @@ nouns <-  JSTOR_dtmofnouns(unpack1grams, sparse = 0.75)
 JSTOR_freqwords(unpack1grams, nouns)
 ```
 
+In archaeology we see a turn from typological analyses of pottery to work on population-level behaviors and settlement patterns. Dating becomes frequently discussed after radiocarbon methods become widely available. 
 
 ```{r AA}
 ### unpack and get nouns American Antiquity
@@ -69,11 +67,13 @@ nouns <-  JSTOR_dtmofnouns(unpack1grams, sparse = 0.75)
 JSTOR_freqwords(unpack1grams, nouns)
 ```
 
+Topic models generated by latent Dirichlet allocation show hot and cold topics over time in American archaeology. These validate and add context to the plot of most frequent words per decade generated in the previous chunk. We get a clear picture of how the intellectual history of American archaeology has changed over time, with the hot topics more abstract and theory-focused, and the cold topics more concrete and materials-based. 
 
 ```{r AA-topic-model}
 # topic model for American Antiquity
-K = 200
-topmod <- JSTOR_lda(unpack1grams, nouns, K, alpha = 50/K)
+K = 200 # set the number of topics to identify
+topmod <- JSTOR_lda(unpack1grams, nouns, K, alpha = 50/K) # generate topic model
+
 # plot hot and cold topics
 htoncold <- JSTOR_lda_hotncoldtopics(topmod, pval = 0.01, ma = 5)
 ```
