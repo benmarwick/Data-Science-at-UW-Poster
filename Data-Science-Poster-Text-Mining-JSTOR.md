@@ -89,7 +89,7 @@ K-means clustering of journal articles using word frequencies (right) reveals di
 
 ```{r AA-k-means}
 # plot k-means clusters of documents containing the word 'gender'
-gender <- JSTOR_clusterbywords(nouns, 'gender', f = 0.01)
+gender <- JSTOR_clusterbywords(unpack1grams$wordcounts, 'gender', f = 0.01)
 ```
 
 
