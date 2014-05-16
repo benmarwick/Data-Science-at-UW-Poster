@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=9" >
+
+<title>Text mining JSTOR: Quantitative approaches to histories of science</title>
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 12px;
+   margin: 8px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 { 
+   font-size:2.2em; 
+}
+
+h2 { 
+   font-size:1.8em; 
+}
+
+h3 { 
+   font-size:1.4em; 
+}
+
+h4 { 
+   font-size:1.0em; 
+}
+
+h5 { 
+   font-size:0.9em; 
+}
+
+h6 { 
+   font-size:0.8em; 
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre {	
+   margin-top: 0;
+   max-width: 95%;
+   border: 1px solid #ccc;
+   white-space: pre-wrap;
+}
+
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code.r, code.cpp {
+   background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * { 
+      background: transparent !important; 
+      color: black !important; 
+      filter:none !important; 
+      -ms-filter: none !important; 
+   }
+
+   body { 
+      font-size:12pt; 
+      max-width:100%; 
+   }
+       
+   a, a:visited { 
+      text-decoration: underline; 
+   }
+
+   hr { 
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote { 
+      padding-right: 1em; 
+      page-break-inside: avoid; 
+   }
+
+   tr, img { 
+      page-break-inside: avoid; 
+   }
+
+   img { 
+      max-width: 100% !important; 
+   }
+
+   @page :left { 
+      margin: 15mm 20mm 15mm 10mm; 
+   }
+     
+   @page :right { 
+      margin: 15mm 10mm 15mm 20mm; 
+   }
+
+   p, h2, h3 { 
+      orphans: 3; widows: 3; 
+   }
+
+   h2, h3 { 
+      page-break-after: avoid; 
+   }
+}
+
+</style>
+
+
+
+
+
+</head>
+
+<body>
+<h2>Text mining JSTOR: Quantitative approaches to histories of science</h2>
+
+<p>Ben Marwick &amp; Ian Kretzler, UW Anthropology</p>
+
+<p>This markdown file accompanies the poster presented at the UW Data Science event on 7 Feb 2014. It contains the R code used to generate the figures on the poster and additional details about methods that are not on the poster. </p>
+
+<p><a href="https://books.google.com/ngrams">Google’s Ngram viewer</a> is a tool for visualizing the popularity of words over time in 5 million books digitized by Google. It has been described as the ‘gateway drug’  for data science in the humanities (<a href="http://mainedh.org/2013/09/09/google-ngrams-the-gateway-drug-to-digital-humanities/">1</a>, <a href="http://www.dancohen.org/2010/12/19/initial-thoughts-on-the-google-books-ngram-viewer-and-datasets/">2</a>). While it is fun for casual searches, it has substantial limitations that prevent it from being a scholarly tool. The main problem is we simply don’t know what is in the corpus. This makes validation through close reading of the texts impossible.</p>
+
+<p>Inspired by the Google Ngram viewer, we wrote <a href="https://github.com/UW-ARCHY-textual-macroanalysis-lab/JSTORr">JSTORr</a>, an R package that visualizes Ngrams for corpora held by JSTOR, a digital library of 2000 scholarly journals. <a href="http://about.jstor.org/service/data-for-research">JSTOR’s Data for Research</a> service allows users to download full text of journals. With JSTORr, the full text can be analysed for ngrams, word correlations, document clustering and topic modelling. This means that we can now carefully build a sizable corpora of scholarly literature on specific topics and investigate them with text mining methods. In this poster we demonstrate some of the basic functions of the package to get insights into the history of science. </p>
+
+<p>The package is hosted on github and can be installed locally using the following code:</p>
+
+<pre><code class="r load-libraries">library(devtools)
+install_github(repo = &quot;JSTORr&quot;, username = &quot;UW-ARCHY-textual-macroanalysis-lab&quot;)
+library(JSTORr)
+</code></pre>
+
+<p>For this poster we selected three journals by searching the Thomson Reuters ISI Journal Citation Reports for &#39;Statistics and Probability&#39;, &#39;Biology&#39; and &#39;Anthropology&#39; (more specifically archaeology) and ranking the search results by the journals&#39; Eigenfactor Scores. We then obtained from JSTOR all the available articles of the highest ranking journal for each subject in JSTOR&#39;s collection. For &#39;Statistics and Probability&#39; this was <em>Biometrika</em>, for &#39;Biology&#39; this was <em>Philosophical Transactions of the Royal Society B</em>, and for &#39;Anthropology&#39; it was <em>American Antiquity</em>. The journal articles were obtained from JSTOR&#39;s Data for Research service. The data were then analysed using the JSTORr package (1.0.20140204) with R (3.0.2 on x86_64-pc-linux-gnu 64-bit). </p>
+
+<pre><code class="r unzip-data"># My local path where the zip files are - yours will be different
+path &lt;- &#39;/home/two/teamviewer&#39;
+setwd(path)
+## unzip journal archives obtained from dfr.jstor.org
+# American Antiquity
+unzip(&#39;2013.1.1.E84E4jrp.AA.zip&#39;, exdir = &quot;AA&quot;) 
+# Philosophical Transactions of the Royal Society B
+unzip(&#39;2014.1.20.CjjqAWEE-PTRS_B.zip&#39;, exdir = &quot;PTRS_B&quot;)
+# Biometrika
+unzip(&#39;2014.1.20.YFVATDRz-Biometrika.zip&#39;, exdir = &quot;Biometrika&quot;)
+</code></pre>
+
+<p>Looking first at the statistics journal <em>Biometrika</em>, we can quickly see intellectual shifts in a high-impact statistics journal (above) from correlation to model-based analyses. We can also clearly see the impact of the two world wars on the journal with a drop in word frequencies during 1916-1920 and 1941-45. </p>
+
+<pre><code class="r Biometrika">### unpack and get nouns Biometrika
+path_Biometrika &lt;-&#39;/home/two/teamviewer/BS&#39;
+unpack1grams &lt;- JSTOR_unpack1grams(path = path_Biometrika)
+nouns &lt;-  JSTOR_dtmofnouns(unpack1grams, sparse = 0.75)
+
+# most frequent words over time
+JSTOR_freqwords(unpack1grams, nouns)
+</code></pre>
+
+<p>Similarly, the prominent biology journal <em>Philosophical Transactions of the Royal Society B</em> reveals a turn from macrostructures to a focus on cells and proteins. We might hypothesize that these intellectual trends are related to technological changes in imaging and biochemistry. This hypothesis could be tested by close reading of a small sample of articles.</p>
+
+<pre><code class="r PTRS_B">### unpack and get nouns PTRS_B
+path_PTRS_B &lt;-&#39;/home/two/teamviewer/PTRS_B&#39;
+unpack1grams &lt;- JSTOR_unpack1grams(path = path_PTRS_B)
+nouns &lt;-  JSTOR_dtmofnouns(unpack1grams, sparse = 0.75)
+
+# most frequent words over time
+JSTOR_freqwords(unpack1grams, nouns)
+</code></pre>
+
+<p>In archaeology we see a turn from typological analyses of pottery to work on population-level behaviors and settlement patterns. Dating becomes frequently discussed after radiocarbon methods become widely available. </p>
+
+<pre><code class="r AA">### unpack and get nouns American Antiquity
+path_AmAnt &lt;-&#39;/home/two/teamviewer/AA&#39;
+unpack1grams &lt;- JSTOR_unpack1grams(path = path_AmAnt)
+nouns &lt;-  JSTOR_dtmofnouns(unpack1grams, sparse = 0.75)
+
+# most frequent words over time
+JSTOR_freqwords(unpack1grams, nouns)
+</code></pre>
+
+<p>Topic models generated by latent Dirichlet allocation show hot and cold topics over time in American archaeology. These validate and add context to the plot of most frequent words per decade generated in the previous chunk.</p>
+
+<pre><code class="r AA-topic-model"># topic model for American Antiquity
+K = 200
+topmod &lt;- JSTOR_lda(unpack1grams, nouns, K, alpha = 50/K)
+# plot hot and cold topics
+htoncold &lt;- JSTOR_lda_hotncoldtopics(topmod, pval = 0.01, ma = 5)
+</code></pre>
+
+<pre><code class="r AA-ngram-over-time">
+
+
+
+</code></pre>
+
+</body>
+
+</html>
+
